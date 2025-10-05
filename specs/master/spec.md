@@ -71,7 +71,7 @@ As a parent, I want a personal, on-device "bank" for my children so they can lea
 - **FR-025**: Settings – Delete Everything: on confirmation, remove all internal files and reset the app to first-time state.
 - **FR-026**: File storage is local, non-encrypted, ASCII-only content. Maintain exactly one backup copy per internal file to enable restore to a known working state. Backup policy: after a successful write to the current file, atomically overwrite the backup with the previous current version; never update the backup before a successful current write.
 - **FR-027**: File naming conventions: `PARENT.txt`, `<CHILD_NAME>.txt`, and `<CHILD_NAME>.<ACCOUNT_NAME>.txt`.
-- **FR-028**: UI is clean, friendly, and mobile-first for phones and tablets, with a whimsical bank icon.
+- **FR-028**: UI is mobile-first and responsive. Accessibility: meet WCAG AA contrast; tap targets ≥44x44px; keyboard focus visible. Viewport support: small phone (~360x640), large phone (~414x896), tablet (~768x1024); critical screens must render without horizontal scroll. Include a whimsical bank icon.
 
 ### Key Entities *(include if feature involves data)*
 - **Parent**: Device owner; attributes: name, list of child references.
