@@ -1,0 +1,25 @@
+﻿# KidsSavingsAccount Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-10-04
+
+## Active Technologies
+- TypeScript + React (Next.js) + Next.js, idb-keyval (IndexedDB), Recharts (master)
+
+## Project Structure
+```
+backend/
+frontend/
+tests/
+```
+
+## Commands
+npm test; npm run lint
+
+## Code Style
+TypeScript + React (Next.js): Follow standard conventions
+
+## Recent Changes
+- master: Added TypeScript + React (Next.js) + Next.js, idb-keyval (IndexedDB), Recharts
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
