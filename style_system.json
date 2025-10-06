@@ -1,0 +1,169 @@
+{
+    "designSystem": {
+      "name": "Fintech Mobile App UI Kit",
+      "style": {
+        "overallAesthetic": "Clean, modern, and professional with a focus on readability and intuitive navigation.",
+        "colorPalette": {
+          "primary": "#007AFF",
+          "secondary": "#34C759",
+          "tertiary": "#FF3B30",
+          "background": "#F2F2F7",
+          "surface": "#FFFFFF",
+          "textPrimary": "#1C1C1E",
+          "textSecondary": "#8E8E93",
+          "accentBackground": "#E5F0FF"
+        },
+        "typography": {
+          "fontFamily": "'SF Pro Display', 'Roboto', sans-serif",
+          "headings": {
+            "h1": { "fontSize": "28px", "fontWeight": "600", "lineHeight": "34px" },
+            "h2": { "fontSize": "22px", "fontWeight": "600", "lineHeight": "28px" },
+            "h3": { "fontSize": "17px", "fontWeight": "600", "lineHeight": "22px" }
+          },
+          "bodyText": {
+            "large": { "fontSize": "17px", "fontWeight": "400", "lineHeight": "22px" },
+            "medium": { "fontSize": "15px", "fontWeight": "400", "lineHeight": "20px" },
+            "small": { "fontSize": "13px", "fontWeight": "400", "lineHeight": "18px" }
+          },
+          "caption": { "fontSize": "11px", "fontWeight": "400", "lineHeight": "13px" }
+        },
+        "spacing": {
+          "xxs": "4px",
+          "xs": "8px",
+          "sm": "12px",
+          "md": "16px",
+          "lg": "20px",
+          "xl": "24px",
+          "xxl": "32px"
+        },
+        "borderRadii": {
+          "small": "8px",
+          "medium": "12px",
+          "large": "16px",
+          "full": "9999px"
+        },
+        "shadows": {
+          "card": "0px 1px 3px rgba(0, 0, 0, 0.1)",
+          "modal": "0px 8px 16px rgba(0, 0, 0, 0.15)"
+        },
+        "icons": {
+          "style": "Outline, minimalist",
+          "size": "24px"
+        }
+      },
+      "structure": {
+        "layoutGrid": {
+          "columns": "12",
+          "gutter": "16px",
+          "margin": "16px"
+        },
+        "components": [
+          {
+            "name": "Navigation Bar (Top)",
+            "properties": {
+              "height": "44px",
+              "backgroundColor": "surface",
+              "alignment": "center (title), left/right (icons)",
+              "elements": ["backButton", "screenTitle", "actionButton"]
+            }
+          },
+          {
+            "name": "Navigation Bar (Bottom)",
+            "properties": {
+              "height": "49px",
+              "backgroundColor": "surface",
+              "borderTop": "1px solid #E5E5EA",
+              "elements": ["iconButton (5 items)"]
+            }
+          },
+          {
+            "name": "Card Container",
+            "properties": {
+              "backgroundColor": "surface",
+              "borderRadius": "medium",
+              "padding": "lg",
+              "shadow": "card",
+              "marginVertical": "md"
+            }
+          },
+          {
+            "name": "Button (Primary)",
+            "properties": {
+              "backgroundColor": "primary",
+              "textColor": "white",
+              "borderRadius": "small",
+              "padding": "sm lg",
+              "fontWeight": "600"
+            }
+          },
+          {
+            "name": "Button (Secondary/Ghost)",
+            "properties": {
+              "backgroundColor": "transparent",
+              "textColor": "primary",
+              "borderRadius": "small",
+              "padding": "sm lg",
+              "fontWeight": "600",
+              "border": "1px solid primary"
+            }
+          },
+          {
+            "name": "Input Field",
+            "properties": {
+              "backgroundColor": "background",
+              "borderRadius": "small",
+              "padding": "sm",
+              "textColor": "textPrimary",
+              "border": "1px solid #E5E5EA"
+            }
+          },
+          {
+            "name": "List Item (Transaction/Contact)",
+            "properties": {
+              "padding": "md lg",
+              "borderBottom": "1px solid #E5E5EA",
+              "display": "flex",
+              "alignItems": "center",
+              "justifyContent": "space-between"
+            }
+          },
+          {
+            "name": "Avatar/Icon Circle",
+            "properties": {
+              "size": "40px",
+              "borderRadius": "full",
+              "backgroundColor": "accentBackground",
+              "textColor": "primary"
+            }
+          },
+          {
+            "name": "Progress Bar",
+            "properties": {
+              "height": "6px",
+              "backgroundColor": "#E5E5EA",
+              "borderRadius": "full",
+              "filledColor": "primary"
+            }
+          },
+          {
+            "name": "Tab/Segmented Control",
+            "properties": {
+              "backgroundColor": "background",
+              "borderRadius": "small",
+              "itemPadding": "xs sm",
+              "selectedItemBackgroundColor": "surface",
+              "selectedItemTextColor": "textPrimary",
+              "unselectedItemTextColor": "textSecondary"
+            }
+          }
+        ]
+      },
+      "guidelines": {
+        "responsiveness": "Design accommodates various mobile screen sizes, maintaining consistent padding and component scaling.",
+        "accessibility": "High contrast ratios for text and clear visual hierarchy for interactive elements.",
+        "interaction": "Clear tap targets, subtle hover/pressed states (implied for mobile context), smooth transitions.",
+        "informationHierarchy": "Important information is bolded or uses larger font sizes; secondary information uses lighter weights or smaller sizes.",
+        "consistency": "Consistent use of colors, typography, spacing, and component styles across all screens."
+      }
+    }
+  }

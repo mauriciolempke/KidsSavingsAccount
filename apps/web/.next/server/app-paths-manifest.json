@@ -1,0 +1,6 @@
+{
+  "/child/[name]/page": "app/child/[name]/page.js",
+  "/page": "app/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/account/[child]/[account]/page": "app/account/[child]/[account]/page.js"
+}
