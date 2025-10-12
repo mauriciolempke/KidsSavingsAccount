@@ -44,7 +44,14 @@ export default function Dashboard({ parentName }: DashboardProps) {
   }
 
   function formatCurrency(amount: number): string {
-    return `$${amount.toLocaleString()}`;
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  function getAccountCountText(child: ChildSummary): string {
+    const count = child.accountCount || 0;
+    if (count === 0) return 'No accounts';
+    if (count === 1) return '1 Account Active';
+    return `${count} Accounts Active`;
   }
 
   if (isLoading) {
@@ -58,22 +65,17 @@ export default function Dashboard({ parentName }: DashboardProps) {
 
   return (
     <div className="dashboard-container">
-      <div className="page-header">
-        <h1 className="page-title">{parentName ? `${parentName}'s Bank` : 'Family Savings Dashboard'}</h1>
-        <div className="header-actions">
-          <Link href="/settings" className="btn btn-secondary">Settings</Link>
-        </div>
+      <div className="parent-dashboard-header">
+        <h1 className="parent-dashboard-title">
+          {parentName ? `${parentName}'s Bank` : 'My Kids Bank'}
+        </h1>
+        <Link href="/settings" className="settings-icon-btn" aria-label="Settings">
+          ⚙️
+        </Link>
       </div>
 
       {children.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">
-            <img 
-              src="/images/piggy-bank.png" 
-              alt="Piggy Bank" 
-              className="empty-state-image"
-            />
-          </div>
           <h2>No Children Added Yet</h2>
           <p>Get started by adding your first child to begin tracking their savings!</p>
           <button 
@@ -85,30 +87,43 @@ export default function Dashboard({ parentName }: DashboardProps) {
         </div>
       ) : (
         <>
-          <div className="dashboard-actions">
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowAddChild(true)}
-            >
-              + Add Child
-            </button>
-          </div>
+          <h2 className="family-overview-title">Family Overview</h2>
 
           <div className="children-grid">
             {children.map((child) => (
               <Link 
                 key={child.name} 
                 href={`/child/${encodeURIComponent(child.name)}`}
-                className="child-card"
               >
-                <div className="child-card-content">
-                  <div className="child-avatar">{child.avatar}</div>
-                  <h3 className="child-name">{child.name}</h3>
-                  <span className="child-balance">{formatCurrency(child.totalBalance)}</span>
+                <div className="child-card-modern">
+                  <div className="child-card-left">
+                    <div className="child-card-name-age">
+                      {child.name}
+                    </div>
+                    <div className="child-card-account-count">
+                      {getAccountCountText(child)}
+                    </div>
+                  </div>
+                  <div className="child-card-right">
+                    <div className="child-card-balance-large">
+                      {formatCurrency(child.totalBalance)}
+                    </div>
+                    <div className="child-card-balance-label">
+                      Total Balance
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
+
+          <button 
+            className="add-child-btn"
+            onClick={() => setShowAddChild(true)}
+          >
+            <span>👶</span>
+            Add New Child
+          </button>
         </>
       )}
 

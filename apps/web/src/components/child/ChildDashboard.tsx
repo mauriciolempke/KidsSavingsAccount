@@ -18,6 +18,8 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
   const { refreshTrigger, triggerRefresh, runBalanceCalculation } = useApp();
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [totalBalance, setTotalBalance] = useState(0);
+  const [savingsTotal, setSavingsTotal] = useState(0);
+  const [goalsTotal, setGoalsTotal] = useState(0);
   const [avatar, setAvatar] = useState<string>('👶');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +53,22 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
 
       setAccounts(summaries);
 
+      // Calculate totals
       const balance = await ChildService.getChildBalance(childName);
       setTotalBalance(balance);
+
+      // Calculate savings and goals totals
+      let savings = 0;
+      let goals = 0;
+      summaries.forEach(account => {
+        if (account.type === 'Goal') {
+          goals += account.balance;
+        } else {
+          savings += account.balance;
+        }
+      });
+      setSavingsTotal(savings);
+      setGoalsTotal(goals);
     } catch (err) {
       console.error('Error loading child data:', err);
       setError('Failed to load child data');
@@ -62,7 +78,7 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
   }
 
   function formatCurrency(amount: number): string {
-    return `$${amount.toLocaleString()}`;
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   async function handleAddAccountSuccess() {
@@ -94,18 +110,28 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
 
   return (
     <div className="child-dashboard-container">
-      <div className="child-dashboard-header">
+      <h1 className="child-dashboard-title">Child Dashboard</h1>
+      
+      <div className="child-name-header">
         <button className="btn-back" onClick={() => router.push('/')}>
-          ← Back
+          ← 
         </button>
-        <div className="child-info">
-          <h1><span className="child-avatar-inline">{avatar}</span> {childName}'s Accounts</h1>
-        </div>
+        <h2>{childName}'s Accounts</h2>
       </div>
 
-      <div className="summary-card">
-        <div className="summary-title">Total Balance</div>
-        <div className="summary-amount">{formatCurrency(totalBalance)}</div>
+      <div className="total-available-card">
+        <div className="total-available-label">Total Available</div>
+        <div className="total-available-amount">{formatCurrency(totalBalance)}</div>
+        <div className="total-breakdown">
+          <div className="breakdown-item">
+            <div className="breakdown-label">Savings:</div>
+            <div className="breakdown-value">{formatCurrency(savingsTotal)}</div>
+          </div>
+          <div className="breakdown-item">
+            <div className="breakdown-label">Goals:</div>
+            <div className="breakdown-value">{formatCurrency(goalsTotal)}</div>
+          </div>
+        </div>
       </div>
 
       {accounts.length === 0 ? (
@@ -122,6 +148,8 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
         </div>
       ) : (
         <>
+          <h3 className="account-list-title">Account List</h3>
+
           <div className="accounts-grid">
             {accounts.map((account) => (
               <AccountCard
@@ -143,14 +171,13 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
             ))}
           </div>
 
-          <div className="dashboard-actions" style={{ marginTop: 16 }}>
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowAddAccount(true)}
-            >
-              + Add Account
-            </button>
-          </div>
+          <button 
+            className="create-account-btn"
+            onClick={() => setShowAddAccount(true)}
+          >
+            <span>➕</span>
+            Create New Account
+          </button>
         </>
       )}
 

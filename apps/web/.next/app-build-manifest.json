@@ -16,11 +16,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/child/[name]/page.js"
     ],
-    "/settings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/settings/page.js"
-    ],
     "/account/[child]/[account]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

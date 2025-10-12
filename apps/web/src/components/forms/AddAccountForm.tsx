@@ -272,7 +272,7 @@ export default function AddAccountForm({ childName, onSuccess, onCancel }: AddAc
                 onChange={(e) => setInterestValue(e.target.value)}
                 placeholder="0"
                 min="0.01"
-                step={interestType === 'Percentage' ? '0.1' : '1'}
+                step="any"
                 disabled={isSubmitting}
                 className="form-input"
               />

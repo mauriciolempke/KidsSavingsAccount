@@ -56,10 +56,6 @@ export default function AccountView({ childName, accountName }: AccountViewProps
     }
   }
 
-  function formatCurrency(amount: number): string {
-    return `$${amount.toLocaleString()}`;
-  }
-
   function formatDate(timestamp: number): string {
     return new Date(timestamp).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -105,39 +101,48 @@ export default function AccountView({ childName, accountName }: AccountViewProps
     );
   }
 
+  function formatCurrency(amount: number): string {
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
   return (
     <div className="account-view-container">
-      <div className="account-header">
+      <div className="account-details-header">
         <button 
           className="btn-back" 
           onClick={() => router.push(`/child/${encodeURIComponent(childName)}`)}
         >
-          ← Back to {childName}'s Accounts
+          ← 
         </button>
-
-        <div className="account-info">
-          <div className="account-title">
-            <h1>{account.name}</h1>
-            <span className="account-type-badge">{account.type}</span>
-            {account.isReadOnly && <span className="readonly-badge">🔒 Read-Only</span>}
-          </div>
-          <div className="account-balance-display">
-            <span className="balance-label">Current Balance</span>
-            <span className="balance-amount">{formatCurrency(account.balance)}</span>
+        <div className="account-header-content">
+          <h1 className="account-title-blue">{account.goal ? account.goal.name + ' Goal' : account.name}</h1>
+          <div className="account-balance-display-large">
+            {formatCurrency(account.balance)}
           </div>
         </div>
       </div>
 
       {account.goal && (
-        <div className="goal-section">
-          <h2>Goal Progress</h2>
-          <GoalProgress 
-            currentAmount={account.balance}
-            targetAmount={account.goal.cost}
-            goalName={account.goal.name}
-            achieved={account.goal.achieved}
-            showDetails={true}
-          />
+        <div className="goal-details-card">
+          <div className="goal-amounts-row">
+            <div className="goal-amount-item">
+              <div className="goal-amount-label">Goal Amount:</div>
+              <div className="goal-amount-value">{formatCurrency(account.goal.cost)}</div>
+            </div>
+            <div className="goal-amount-item">
+              <div className="goal-amount-label">Saved:</div>
+              <div className="goal-amount-value">{formatCurrency(account.balance)}</div>
+            </div>
+          </div>
+          <div className="progress-bar-modern" style={{ marginTop: '16px' }}>
+            <div 
+              className="progress-fill-modern" 
+              style={{ width: `${Math.min(account.goal.progress * 100, 100)}%` }}
+            />
+          </div>
+          <div className="goal-left-message">
+            Only {formatCurrency(account.goal.cost - account.balance)} left to save!
+          </div>
           {account.goal.achieved && (
             <div className="goal-achieved-banner">
               <span className="achievement-icon">🎉</span>
@@ -147,71 +152,59 @@ export default function AccountView({ childName, accountName }: AccountViewProps
         </div>
       )}
 
-      {account.type === 'Savings' && ledger.length > 0 && (
-        <div className="goal-section">
-          <h2>Savings History</h2>
+      <div className="savings-chart-card">
+        <h2 className="section-title-modern">Savings Progression</h2>
+        {ledger.length > 0 ? (
           <SavingsLine ledger={ledger} monthsToShow={3} />
+        ) : (
+          <div className="chart-placeholder">
+            (Placeholder: Simple line graph showing balance over time)
+          </div>
+        )}
+        <div style={{ textAlign: 'center', color: '#757575', fontSize: '0.875rem', marginTop: '8px' }}>
+          Last 30 days of activity
         </div>
-      )}
+      </div>
 
       {!account.isReadOnly && (
-        <div className="account-actions">
+        <div className="account-action-buttons">
           <button 
             className="btn btn-primary"
             onClick={() => setShowDeposit(true)}
           >
-            Deposit
+            📈 Deposit
           </button>
           <button 
-            className="btn btn-secondary"
+            className="btn btn-danger"
             onClick={() => setShowWithdraw(true)}
           >
-            Withdraw
-          </button>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => setShowTransfer(true)}
-          >
-            Transfer
+            📉 Withdraw
           </button>
         </div>
       )}
 
-      <div className="ledger-section">
-        <h2>Transaction History</h2>
+      <div className="recent-activity-section">
+        <h2 className="section-title-modern">Recent Activity</h2>
         {ledger.length === 0 ? (
           <div className="empty-ledger">
             <p>No transactions yet</p>
           </div>
         ) : (
-          <div className="ledger-table-container">
-            <table className="ledger-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Type</th>
-                  <th className="amount-column">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ledger.map((entry, index) => (
-                  <tr key={index}>
-                    <td>{formatDate(entry.timestamp)}</td>
-                    <td>{entry.description}</td>
-                    <td>
-                      <span className={`transaction-type ${entry.type.toLowerCase()}`}>
-                        {entry.type}
-                      </span>
-                    </td>
-                    <td className={`amount-column ${entry.value >= 0 ? 'positive' : 'negative'}`}>
-                      {entry.value >= 0 ? '+' : ''}{formatCurrency(Math.abs(entry.value))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            {ledger.slice(0, 5).map((entry, index) => (
+              <div key={index} className="activity-item">
+                <div className="activity-left">
+                  <div className="activity-description">
+                    {entry.type}: {entry.description}
+                  </div>
+                  <div className="activity-date">{formatDate(entry.timestamp)}</div>
+                </div>
+                <div className={`activity-amount ${entry.value >= 0 ? 'positive' : 'negative'}`}>
+                  {entry.value >= 0 ? '+' : '-'}{formatCurrency(Math.abs(entry.value))}
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
 

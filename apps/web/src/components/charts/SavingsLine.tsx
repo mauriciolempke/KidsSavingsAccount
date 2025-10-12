@@ -61,7 +61,7 @@ export default function SavingsLine({ ledger, monthsToShow = 3, createdAt }: Sav
 }
 
 /**
- * Generates daily balance data points for the chart
+ * Generates daily balance data points for the chart (one point per day)
  */
 function generateChartData(ledger: LedgerEntry[], monthsToShow: number, createdAt?: number): ChartDataPoint[] {
   const now = Date.now();
@@ -82,6 +82,10 @@ function generateChartData(ledger: LedgerEntry[], monthsToShow: number, createdA
   // Sort ledger by timestamp (should already be sorted, but ensure it)
   const sortedLedger = [...ledger].sort((a, b) => a.timestamp - b.timestamp);
 
+  // Calculate starting balance (sum of all entries before startTime)
+  const entriesBeforeStart = sortedLedger.filter(entry => entry.timestamp < startTime);
+  let runningBalance = entriesBeforeStart.reduce((sum, entry) => sum + entry.value, 0);
+
   // Filter to only entries within the time range
   const relevantEntries = sortedLedger.filter(entry => entry.timestamp >= startTime);
 
@@ -89,43 +93,49 @@ function generateChartData(ledger: LedgerEntry[], monthsToShow: number, createdA
     const startDateAlt = new Date(Math.max(startTime, createdAt ?? startTimeDefault));
     const endDateAlt = new Date(now);
     return [
-      { date: startDateAlt.toISOString(), balance: 0, displayDate: formatDateShort(startDateAlt) },
-      { date: endDateAlt.toISOString(), balance: 0, displayDate: formatDateShort(endDateAlt) },
+      { date: startDateAlt.toISOString(), balance: Math.max(0, runningBalance), displayDate: formatDateShort(startDateAlt) },
+      { date: endDateAlt.toISOString(), balance: Math.max(0, runningBalance), displayDate: formatDateShort(endDateAlt) },
     ];
   }
 
-  // Calculate balance at each entry point
-  const dataPoints: ChartDataPoint[] = [];
-  let runningBalance = 0;
-
-  // Calculate starting balance (sum of all entries before startTime)
-  const entriesBeforeStart = sortedLedger.filter(entry => entry.timestamp < startTime);
-  runningBalance = entriesBeforeStart.reduce((sum, entry) => sum + entry.value, 0);
+  // Group transactions by day and calculate end-of-day balance
+  const dailyBalances = new Map<string, { balance: number; timestamp: number }>();
 
   // Add starting point
-  const startDate = new Date(startTime);
-  dataPoints.push({
-    date: startDate.toISOString(),
-    balance: Math.max(0, runningBalance),
-    displayDate: formatDateShort(startDate),
+  const startDateKey = getDateKey(new Date(startTime));
+  dailyBalances.set(startDateKey, { 
+    balance: Math.max(0, runningBalance), 
+    timestamp: startTime 
   });
 
-  // Add data point for each transaction
+  // Process each transaction
   for (const entry of relevantEntries) {
     runningBalance += entry.value;
     const entryDate = new Date(entry.timestamp);
-    dataPoints.push({
-      date: entryDate.toISOString(),
+    const dateKey = getDateKey(entryDate);
+    
+    // Update the balance for this day (overwrite with the latest balance for the day)
+    dailyBalances.set(dateKey, { 
       balance: Math.max(0, runningBalance),
-      displayDate: formatDateShort(entryDate),
+      timestamp: entry.timestamp 
     });
   }
 
+  // Convert to array and sort by date
+  const dataPoints: ChartDataPoint[] = Array.from(dailyBalances.entries())
+    .sort((a, b) => a[1].timestamp - b[1].timestamp)
+    .map(([dateKey, data]) => ({
+      date: new Date(data.timestamp).toISOString(),
+      balance: data.balance,
+      displayDate: formatDateShort(new Date(data.timestamp)),
+    }));
+
   // Add current point if the last entry isn't today
   const lastEntry = relevantEntries[relevantEntries.length - 1];
-  const daysSinceLastEntry = (now - lastEntry.timestamp) / (24 * 60 * 60 * 1000);
+  const todayKey = getDateKey(new Date(now));
+  const lastEntryKey = getDateKey(new Date(lastEntry.timestamp));
   
-  if (daysSinceLastEntry > 1) {
+  if (todayKey !== lastEntryKey) {
     const currentDate = new Date(now);
     dataPoints.push({
       date: currentDate.toISOString(),
@@ -134,18 +144,17 @@ function generateChartData(ledger: LedgerEntry[], monthsToShow: number, createdA
     });
   }
 
-  // Sample data points if there are too many (keep every Nth point)
-  if (dataPoints.length > 30) {
-    const step = Math.ceil(dataPoints.length / 30);
-    const sampledPoints = dataPoints.filter((_, index) => index % step === 0);
-    // Always include the last point
-    if (sampledPoints[sampledPoints.length - 1] !== dataPoints[dataPoints.length - 1]) {
-      sampledPoints.push(dataPoints[dataPoints.length - 1]);
-    }
-    return sampledPoints;
-  }
-
   return dataPoints;
+}
+
+/**
+ * Gets a date key in YYYY-MM-DD format for grouping
+ */
+function getDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /**

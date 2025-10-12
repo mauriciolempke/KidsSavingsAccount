@@ -40,49 +40,63 @@ export default function AccountCard({ childName, account }: AccountCardProps) {
     { label: '1Y', value: 12 },
   ], []);
 
+  function formatCurrency(amount: number): string {
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  const cardClass = account.goal?.achieved 
+    ? 'account-card-modern achieved-account' 
+    : account.goal 
+    ? 'account-card-modern goal-account' 
+    : 'account-card-modern';
+
   return (
-    <div className={`account-card ${account.goal?.achieved ? 'account-achieved' : ''}`}>
-      <div className="account-card-header">
-        <div className="account-card-title">
-          <h3>{account.name}</h3>
-          <span className="account-balance">${account.balance.toLocaleString()}</span>
-          <span className="account-type">{account.type}</span>
+    <Link href={`/account/${encodeURIComponent(childName)}/${encodeURIComponent(account.name)}`}>
+      <div className={cardClass}>
+        <div className="account-name-row">
+          <div>
+            <div className="account-name-title">{account.name}</div>
+            {account.type === 'Compound Interest' && (
+              <div className="account-status-badge">
+                💰 Compound Interest Active
+              </div>
+            )}
+          </div>
+          <div className="account-balance-large">
+            {formatCurrency(account.balance)}
+          </div>
         </div>
-        <Link
-          href={`/account/${encodeURIComponent(childName)}/${encodeURIComponent(account.name)}`}
-          className="btn btn-secondary btn-small"
-        >
-          View Details
-        </Link>
-      </div>
 
-      {account.goal && (
-        <div className="account-goal-panel">
-          <GoalProgress
-            goalName={account.goal.name}
-            currentAmount={account.balance}
-            targetAmount={account.goal.cost}
-            achieved={account.goal.achieved}
-          />
-        </div>
-      )}
+        {account.goal && (
+          <div className="goal-info-card">
+            <div className="goal-header-row">
+              <div className="goal-name-text">Goal: {account.goal.name}</div>
+              <div className="goal-needed-text">
+                {formatCurrency(account.goal.cost - account.balance)} needed
+              </div>
+            </div>
+            <div className="progress-bar-modern">
+              <div 
+                className="progress-fill-modern" 
+                style={{ width: `${Math.min(account.goal.progress * 100, 100)}%` }}
+              />
+            </div>
+            <div className="goal-saved-text">
+              {formatCurrency(account.balance)} Saved
+            </div>
+            <div className="goal-complete-text">
+              {Math.round(account.goal.progress * 100)}% Complete
+            </div>
+          </div>
+        )}
 
-      <div className="account-chart">
-        <SavingsLine ledger={ledger} monthsToShow={monthsToShow} createdAt={account.createdAt} />
+        {!account.goal && (
+          <div className="account-chart">
+            <SavingsLine ledger={ledger} monthsToShow={monthsToShow} createdAt={account.createdAt} />
+          </div>
+        )}
       </div>
-
-      <div className="period-selector period-below">
-        {periodOptions.map(opt => (
-          <button
-            key={opt.value}
-            className={monthsToShow === opt.value ? 'period-btn active' : 'period-btn'}
-            onClick={() => setMonthsToShow(opt.value)}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
+    </Link>
   );
 }
 
