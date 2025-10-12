@@ -1,12 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockTransferPage = () => <div>Transfer Mock</div>;
 
 describe('Transfer - Same Account Rejection', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -18,7 +19,7 @@ describe('Transfer - Same Account Rejection', () => {
         ]
       })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike Fund',

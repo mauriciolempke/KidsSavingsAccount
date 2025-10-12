@@ -1,16 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockDashboard = () => <div>Dashboard Mock</div>;
 
 describe('Delete Child', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma'] })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -19,7 +20,7 @@ describe('Delete Child', () => {
         cbts: Date.now()
       })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -56,14 +57,14 @@ describe('Delete Child', () => {
 
     await waitFor(() => {
       // Verify child removed from parent
-      const parentData = JSON.parse(window.localStorage.getItem('PARENT.txt') || '{}');
+      const parentData = JSON.parse(mockStore.get('PARENT.txt') || '{}');
       expect(parentData.children).not.toContain('emma');
 
       // Verify child file deleted
-      expect(window.localStorage.getItem('CHILD-emma.txt')).toBeNull();
+      expect(mockStore.get('CHILD-emma.txt')).toBeUndefined();
 
       // Verify account files deleted
-      expect(window.localStorage.getItem('ACCOUNT-emma-savings.txt')).toBeNull();
+      expect(mockStore.get('ACCOUNT-emma-savings.txt')).toBeUndefined();
     });
   });
 
@@ -78,7 +79,7 @@ describe('Delete Child', () => {
     await user.click(cancelButton);
 
     // Verify data still exists
-    expect(window.localStorage.getItem('CHILD-emma.txt')).not.toBeNull();
+    expect(mockStore.get('CHILD-emma.txt')).toBeDefined();
   });
 });
 

@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import { mockStore } from '../../setupTests';
 
 const mockAccountPage = () => <div>Account View Mock</div>;
 
 describe('Account View', () => {
   it('should display account name, balance, Savings chart, and ledger table for Savings account', async () => {
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -35,7 +36,7 @@ describe('Account View', () => {
   });
 
   it('should display goal progress bar for Goal account instead of chart', async () => {
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike Fund',

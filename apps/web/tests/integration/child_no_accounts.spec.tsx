@@ -1,16 +1,17 @@
 import { render, screen } from '@testing-library/react';
+import { mockStore } from '../../setupTests';
 
 // Mock child dashboard page component
 const mockChildPage = () => <div>Child Dashboard</div>;
 
 describe('Child Dashboard - No Accounts', () => {
   it('should display guidance to add an account when child has no accounts', async () => {
-    window.localStorage.setItem(
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma'] })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',

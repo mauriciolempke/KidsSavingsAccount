@@ -1,16 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockChildDashboard = () => <div>Child Dashboard Mock</div>;
 
 describe('Delete Account', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma'] })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -19,7 +20,7 @@ describe('Delete Account', () => {
         cbts: Date.now()
       })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -29,7 +30,7 @@ describe('Delete Account', () => {
         ledger: []
       })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike Fund',
@@ -64,12 +65,12 @@ describe('Delete Account', () => {
 
     await waitFor(() => {
       // Verify account removed from child
-      const childData = JSON.parse(window.localStorage.getItem('CHILD-emma.txt') || '{}');
+      const childData = JSON.parse(mockStore.get('CHILD-emma.txt') || '{}');
       expect(childData.accounts).not.toContain('savings');
       expect(childData.accounts).toContain('bike'); // Other account still exists
 
       // Verify account file deleted
-      expect(window.localStorage.getItem('ACCOUNT-emma-savings.txt')).toBeNull();
+      expect(mockStore.get('ACCOUNT-emma-savings.txt')).toBeUndefined();
     });
   });
 
@@ -85,7 +86,7 @@ describe('Delete Account', () => {
 
     await waitFor(() => {
       // Balance calculation should run after deletion
-      const childData = JSON.parse(window.localStorage.getItem('CHILD-emma.txt') || '{}');
+      const childData = JSON.parse(mockStore.get('CHILD-emma.txt') || '{}');
       expect(childData.cbts).toBeGreaterThan(0);
     });
   });

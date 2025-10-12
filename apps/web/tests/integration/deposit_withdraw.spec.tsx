@@ -1,12 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockAccountPage = () => <div>Account View Mock</div>;
 
 describe('Deposit and Withdraw', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',

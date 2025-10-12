@@ -1,16 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockSettingsPage = () => <div>Settings Mock</div>;
 
 describe('Settings - Import/Export/Delete Everything', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma'] })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',

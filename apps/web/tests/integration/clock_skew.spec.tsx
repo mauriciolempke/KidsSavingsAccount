@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import { mockStore } from '../../setupTests';
 
 describe('Clock Skew Detection', () => {
   it('should show warning message when device clock is earlier than CBTS', async () => {
     const futureTime = Date.now() + 24 * 60 * 60 * 1000; // 1 day in future
 
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -25,7 +26,7 @@ describe('Clock Skew Detection', () => {
   it('should skip balance calculation processing when clock skew detected', async () => {
     const futureTime = Date.now() + 24 * 60 * 60 * 1000;
 
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -35,7 +36,7 @@ describe('Clock Skew Detection', () => {
       })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',

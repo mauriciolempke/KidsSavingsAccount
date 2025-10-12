@@ -1,12 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockAccountPage = () => <div>Account View Mock</div>;
 
 describe('Withdraw - Overdraw Auto-Cap', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -42,7 +43,7 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
     });
 
     // Verify withdrawal was capped to $50
-    const accountData = JSON.parse(window.localStorage.getItem('ACCOUNT-emma-savings.txt') || '{}');
+    const accountData = JSON.parse(mockStore.get('ACCOUNT-emma-savings.txt') || '{}');
     const lastEntry = accountData.ledger[accountData.ledger.length - 1];
     expect(Math.abs(lastEntry.value)).toBe(50);
   });
@@ -83,7 +84,7 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
     await user.click(submitButton);
 
     // After capping, balance should be 0, not negative
-    const accountData = JSON.parse(window.localStorage.getItem('ACCOUNT-emma-savings.txt') || '{}');
+    const accountData = JSON.parse(mockStore.get('ACCOUNT-emma-savings.txt') || '{}');
     const balance = accountData.ledger.reduce((sum: number, entry: any) => sum + entry.value, 0);
     expect(balance).toBeGreaterThanOrEqual(0);
   });

@@ -1,11 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { mockStore } from '../../setupTests';
 
 describe('Balance Calculation', () => {
   it('should post due allowance and interest; round up; interest before allowance', async () => {
     const now = Date.now();
     const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -15,7 +16,7 @@ describe('Balance Calculation', () => {
       })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',

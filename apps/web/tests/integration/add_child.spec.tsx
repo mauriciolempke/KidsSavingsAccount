@@ -1,11 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Home from '../../src/app/page';
+import { Providers } from '../../src/app/providers';
+import { mockStore } from '../../setupTests';
 
 describe('Add Child', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: [] })
     );
@@ -13,7 +15,11 @@ describe('Add Child', () => {
 
   it('should add a child with a unique name, create file, and navigate to Child Dashboard', async () => {
     const user = userEvent.setup();
-    render(<Home />);
+    render(
+      <Providers>
+        <Home />
+      </Providers>
+    );
 
     // Find and click "Add Child" button
     const addButton = await screen.findByRole('button', { name: /add child/i });
@@ -35,7 +41,11 @@ describe('Add Child', () => {
 
   it('should accept UTF-8 characters in child name', async () => {
     const user = userEvent.setup();
-    render(<Home />);
+    render(
+      <Providers>
+        <Home />
+      </Providers>
+    );
 
     const addButton = await screen.findByRole('button', { name: /add child/i });
     await user.click(addButton);
@@ -53,13 +63,17 @@ describe('Add Child', () => {
   });
 
   it('should reject duplicate child name (case-insensitive)', async () => {
-    window.localStorage.setItem(
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma'] })
     );
 
     const user = userEvent.setup();
-    render(<Home />);
+    render(
+      <Providers>
+        <Home />
+      </Providers>
+    );
 
     const addButton = await screen.findByRole('button', { name: /add child/i });
     await user.click(addButton);

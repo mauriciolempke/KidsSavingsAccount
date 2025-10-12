@@ -1,14 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 describe('Name Uniqueness Validation', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma'] })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -61,11 +62,11 @@ describe('Name Uniqueness Validation', () => {
   });
 
   it('should allow same account name across different children', async () => {
-    window.localStorage.setItem(
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma', 'noah'] })
     );
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-noah.txt',
       JSON.stringify({
         name: 'Noah',

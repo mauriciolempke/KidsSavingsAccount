@@ -1,12 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mockStore } from '../../setupTests';
 
 const mockAccountPage = () => <div>Goal Account Mock</div>;
 
 describe('Goal Achieved', () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
+    mockStore.clear();
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike Fund',
@@ -31,7 +32,7 @@ describe('Goal Achieved', () => {
   });
 
   it('should make Achieved goal account read-only (no deposits/withdraws)', async () => {
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike Fund',
@@ -59,7 +60,7 @@ describe('Goal Achieved', () => {
   it('should exclude Achieved goal from child total balance and accruals', async () => {
     // This is tested at the service/calculation level
     // The UI should not show this balance in totals
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -69,7 +70,7 @@ describe('Goal Achieved', () => {
       })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -82,7 +83,7 @@ describe('Goal Achieved', () => {
       })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike Fund',

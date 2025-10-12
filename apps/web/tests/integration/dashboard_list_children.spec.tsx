@@ -1,15 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import Home from '../../src/app/page';
+import { Providers } from '../../src/app/providers';
+import { mockStore } from '../../setupTests';
 
 describe('Dashboard - List Children with Totals', () => {
   it('should display children with their total balances excluding Achieved goals', async () => {
     // Setup: Parent with two children having various accounts
-    window.localStorage.setItem(
+    mockStore.set(
       'PARENT.txt',
       JSON.stringify({ name: 'Alex', children: ['emma', 'noah'] })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'CHILD-emma.txt',
       JSON.stringify({
         name: 'Emma',
@@ -19,7 +21,7 @@ describe('Dashboard - List Children with Totals', () => {
       })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
         name: 'Savings',
@@ -32,7 +34,7 @@ describe('Dashboard - List Children with Totals', () => {
       })
     );
 
-    window.localStorage.setItem(
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
         name: 'Bike',
@@ -46,7 +48,11 @@ describe('Dashboard - List Children with Totals', () => {
       })
     );
 
-    render(<Home />);
+    render(
+      <Providers>
+        <Home />
+      </Providers>
+    );
 
     // Expect Emma to be listed
     expect(await screen.findByText(/Emma/i)).toBeInTheDocument();
