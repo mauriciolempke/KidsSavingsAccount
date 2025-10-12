@@ -16,9 +16,10 @@ interface AccountCardProps {
     createdAt?: number;
     goal?: { name: string; cost: number; achieved: boolean; progress: number };
   };
+  onDelete?: (accountName: string) => void;
 }
 
-export default function AccountCard({ childName, account }: AccountCardProps) {
+export default function AccountCard({ childName, account, onDelete }: AccountCardProps) {
   const [monthsToShow, setMonthsToShow] = useState<number>(3);
   const [ledger, setLedger] = useState<LedgerEntry[]>([]);
 
@@ -50,9 +51,17 @@ export default function AccountCard({ childName, account }: AccountCardProps) {
     ? 'account-card-modern goal-account' 
     : 'account-card-modern';
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(account.name);
+    }
+  };
+
   return (
-    <Link href={`/account/${encodeURIComponent(childName)}/${encodeURIComponent(account.name)}`}>
-      <div className={cardClass}>
+    <div className={cardClass} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Link href={`/account/${encodeURIComponent(childName)}/${encodeURIComponent(account.name)}`} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div className="account-name-row">
           <div>
             <div className="account-name-title">{account.name}</div>
@@ -91,12 +100,38 @@ export default function AccountCard({ childName, account }: AccountCardProps) {
         )}
 
         {!account.goal && (
-          <div className="account-chart">
+          <div className="account-chart" style={{ flex: 1 }}>
             <SavingsLine ledger={ledger} monthsToShow={monthsToShow} createdAt={account.createdAt} />
           </div>
         )}
-      </div>
-    </Link>
+      </Link>
+      
+      {onDelete && (
+        <div style={{ padding: '12px', borderTop: '1px solid #e0e0e0', backgroundColor: '#f8f9fa' }}>
+          <button
+            onClick={handleDeleteClick}
+            className="delete-account-btn"
+            aria-label={`Delete ${account.name}`}
+            style={{
+              width: '100%',
+              background: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'background-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
+          >
+            Delete Account
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 

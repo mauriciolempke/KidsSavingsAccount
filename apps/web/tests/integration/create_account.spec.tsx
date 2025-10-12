@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockChildPage = () => <div>Child Dashboard Mock</div>;
+import { Providers } from '../../src/app/providers';
+import ChildDashboard from '../../src/components/child/ChildDashboard';
 
 describe('Create Account', () => {
   beforeEach(() => {
@@ -24,10 +24,14 @@ describe('Create Account', () => {
 
   it('should create a Savings account with allowance and interest configuration', async () => {
     const user = userEvent.setup();
-    render(mockChildPage());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
     // Open add account form
-    const addButton = await screen.findByRole('button', { name: /add account|create account/i });
+    const addButton = await screen.findByRole('button', { name: /create.*account/i });
     await user.click(addButton);
 
     // Fill in account details
@@ -49,19 +53,24 @@ describe('Create Account', () => {
     await user.selectOptions(allowanceFreq, 'weekly');
 
     // Submit
-    const submitButton = await screen.findByRole('button', { name: /create|save/i });
+    const submitButton = await screen.findByRole('button', { name: 'Create Account' });
     await user.click(submitButton);
 
+    // Wait for the account card to appear (it's a link to the account page)
     await waitFor(() => {
-      expect(screen.getByText(/Savings/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Savings/i })).toBeInTheDocument();
     });
   });
 
   it('should create a Goal account with goal name and cost', async () => {
     const user = userEvent.setup();
-    render(mockChildPage());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
-    const addButton = await screen.findByRole('button', { name: /add account|create account/i });
+    const addButton = await screen.findByRole('button', { name: /Create First Account/i });
     await user.click(addButton);
 
     const nameInput = await screen.findByRole('textbox', { name: /account name/i });
@@ -77,11 +86,12 @@ describe('Create Account', () => {
     const goalCost = await screen.findByRole('spinbutton', { name: /goal cost|target amount/i });
     await user.type(goalCost, '200');
 
-    const submitButton = await screen.findByRole('button', { name: /create|save/i });
+    const submitButton = await screen.findByRole('button', { name: /Create Account/i });
     await user.click(submitButton);
 
+    // Wait for the account card to appear (it's a link to the account page)
     await waitFor(() => {
-      expect(screen.getByText(/Bike Fund/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Bike Fund/i })).toBeInTheDocument();
     });
   });
 });

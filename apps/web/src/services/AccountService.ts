@@ -243,7 +243,8 @@ export class AccountService {
 
     await AccountRepository.save(childName, account);
   }
-}
+
+} 
 
 // ============================================================================
 // Types

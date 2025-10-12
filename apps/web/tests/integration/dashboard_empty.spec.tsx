@@ -16,8 +16,9 @@ describe('Dashboard - Empty State', () => {
       </Providers>
     );
 
-    expect(await screen.findByText(/Alex Bank/i)).toBeInTheDocument();
-    expect(screen.getByText(/add a child/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Alex's Bank/i)).toBeInTheDocument();
+    expect(screen.getByText(/No Children Added Yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Get started by adding your first child to begin tracking their savings!/i)).toBeInTheDocument();
   });
 });
 

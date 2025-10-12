@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockDashboard = () => <div>Dashboard Mock</div>;
+import { Providers } from '../../src/app/providers';
+import Dashboard from '../../src/components/dashboard/Dashboard';
 
 describe('Delete Child', () => {
   beforeEach(() => {
@@ -34,7 +34,11 @@ describe('Delete Child', () => {
 
   it('should show confirmation dialog before deleting child', async () => {
     const user = userEvent.setup();
-    render(mockDashboard());
+    render(
+      <Providers>
+        <Dashboard />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete.*emma|remove.*child/i });
     await user.click(deleteButton);
@@ -47,7 +51,11 @@ describe('Delete Child', () => {
 
   it('should cascade delete all child files (child + accounts + backups)', async () => {
     const user = userEvent.setup();
-    render(mockDashboard());
+    render(
+      <Providers>
+        <Dashboard />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete.*emma|remove.*child/i });
     await user.click(deleteButton);
@@ -70,7 +78,11 @@ describe('Delete Child', () => {
 
   it('should cancel deletion when user clicks Cancel', async () => {
     const user = userEvent.setup();
-    render(mockDashboard());
+    render(
+      <Providers>
+        <Dashboard />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete.*emma|remove.*child/i });
     await user.click(deleteButton);

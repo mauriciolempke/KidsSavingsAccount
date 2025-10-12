@@ -24,6 +24,9 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [clockSkewDetected, setClockSkewDetected] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadChildData();
@@ -42,6 +45,14 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
 
       const child = await ChildService.getChild(childName);
       if (child?.avatar) setAvatar(child.avatar);
+
+      // Check for clock skew: if CBTS (Current Balance Timestamp) is in the future,
+      // the device clock is running behind
+      if (child?.cbts && child.cbts > Date.now()) {
+        setClockSkewDetected(true);
+      } else {
+        setClockSkewDetected(false);
+      }
 
       const accountsList = await ChildService.getAccounts(childName);
       const summaries: AccountSummary[] = [];
@@ -87,6 +98,32 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
     triggerRefresh();
   }
 
+  function handleDeleteClick(accountName: string) {
+    setAccountToDelete(accountName);
+    setShowDeleteConfirm(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!accountToDelete) return;
+
+    try {
+      await AccountService.deleteAccount(childName, accountToDelete);
+      setShowDeleteConfirm(false);
+      setAccountToDelete(null);
+      await runBalanceCalculation();
+      triggerRefresh();
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      setError('Failed to delete account');
+      setShowDeleteConfirm(false);
+    }
+  }
+
+  function handleCancelDelete() {
+    setShowDeleteConfirm(false);
+    setAccountToDelete(null);
+  }
+
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -118,6 +155,28 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
         </button>
         <h2>{childName}'s Accounts</h2>
       </div>
+
+      {clockSkewDetected && (
+        <div className="warning-banner" role="alert" style={{ 
+          backgroundColor: '#fff3cd', 
+          border: '1px solid #ffc107',
+          borderRadius: '8px',
+          padding: '16px',
+          marginBottom: '20px',
+          color: '#856404'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <div>
+              <strong>Clock Skew Detected</strong>
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px' }}>
+                Your device clock appears to be earlier than the last balance update. 
+                Please adjust your device clock to the correct time to ensure accurate balance calculations.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="total-available-card">
         <div className="total-available-label">Total Available</div>
@@ -167,6 +226,7 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
                     progress: account.goal.progress,
                   } : undefined,
                 }}
+                onDelete={showDeleteConfirm ? undefined : handleDeleteClick}
               />
             ))}
           </div>
@@ -199,6 +259,55 @@ export default function ChildDashboard({ childName }: ChildDashboardProps) {
               onSuccess={handleAddAccountSuccess}
               onCancel={() => setShowAddAccount(false)}
             />
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={handleCancelDelete}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Are you sure you want to permanently delete the <b>{accountToDelete}</b> account?</h2>
+              <button 
+                className="modal-close"
+                onClick={handleCancelDelete}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+             
+              <p className="warning-text">
+                This will permanently delete:
+              </p>
+              <ul style={{ marginLeft: '40px' }}>
+                <li>All transactions</li>
+                <li>Any progress on goals</li>
+                <li>All account information</li>
+              </ul>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <p style={{ color: '#dc3545', fontWeight: 'bold', marginTop: '10px' }}>
+                This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={handleCancelDelete}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-danger"
+                  onClick={handleConfirmDelete}
+                  style={{ backgroundColor: '#dc3545', color: 'white' }}
+                  aria-label="Yes, Delete"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

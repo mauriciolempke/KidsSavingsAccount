@@ -39,6 +39,17 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// Mock ResizeObserver (used by Recharts for responsive charts)
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
+// Mock URL.createObjectURL and revokeObjectURL for file download tests
+global.URL.createObjectURL = jest.fn(() => 'mock-object-url');
+global.URL.revokeObjectURL = jest.fn();
+
 // Clear the mock store before each test
 beforeEach(() => {
   mockStore.clear();

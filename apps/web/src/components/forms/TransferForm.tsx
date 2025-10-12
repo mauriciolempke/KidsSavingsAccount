@@ -18,6 +18,7 @@ export default function TransferForm({ childName, currentAccountName, onSuccess,
   const [amount, setAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -67,6 +68,7 @@ export default function TransferForm({ childName, currentAccountName, onSuccess,
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
     // Validation
     if (!fromAccount) {
@@ -94,7 +96,18 @@ export default function TransferForm({ childName, currentAccountName, onSuccess,
 
     try {
       const result = await TransferService.transfer(childName, fromAccount, toAccount, amountNum);
-      onSuccess(result.toastMessage);
+      
+      // Display success or capping message
+      if (result.toastMessage) {
+        setSuccess(result.toastMessage);
+      } else {
+        setSuccess('Transfer successful');
+      }
+      
+      // Wait a bit before calling onSuccess so the message is visible
+      setTimeout(() => {
+        onSuccess(result.toastMessage);
+      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to transfer');
       setIsSubmitting(false);
@@ -209,6 +222,19 @@ export default function TransferForm({ childName, currentAccountName, onSuccess,
       {error && (
         <div className="error-message" role="alert">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="success-message" role="alert" style={{
+          backgroundColor: '#d4edda',
+          border: '1px solid #c3e6cb',
+          color: '#155724',
+          padding: '12px',
+          borderRadius: '4px',
+          marginBottom: '16px'
+        }}>
+          {success}
         </div>
       )}
 

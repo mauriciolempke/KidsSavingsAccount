@@ -1,12 +1,25 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockAccountPage = () => <div>Account View Mock</div>;
+import { Providers } from '../../src/app/providers';
+import AccountView from '../../src/components/account/AccountView';
 
 describe('Withdraw - Overdraw Auto-Cap', () => {
   beforeEach(() => {
     mockStore.clear();
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
+    mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['savings'],
+        cb: 50,
+        cbts: Date.now()
+      })
+    );
     mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
@@ -23,7 +36,11 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
 
   it('should auto-cap withdraw amount to available balance with toast notification', async () => {
     const user = userEvent.setup();
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
     const withdrawButton = await screen.findByRole('button', { name: /withdraw/i });
     await user.click(withdrawButton);
@@ -34,7 +51,7 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
     const descInput = await screen.findByRole('textbox', { name: /description/i });
     await user.type(descInput, 'Toy');
 
-    const submitButton = await screen.findByRole('button', { name: /submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: 'Withdraw' });
     await user.click(submitButton);
 
     // Expect toast notification about capping
@@ -50,7 +67,11 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
 
   it('should allow withdrawal of exact available balance without toast', async () => {
     const user = userEvent.setup();
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
     const withdrawButton = await screen.findByRole('button', { name: /withdraw/i });
     await user.click(withdrawButton);
@@ -61,7 +82,7 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
     const descInput = await screen.findByRole('textbox', { name: /description/i });
     await user.type(descInput, 'Toy');
 
-    const submitButton = await screen.findByRole('button', { name: /submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: 'Withdraw' });
     await user.click(submitButton);
 
     // Should succeed without toast
@@ -72,7 +93,11 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
 
   it('should prevent negative balance', async () => {
     const user = userEvent.setup();
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
     const withdrawButton = await screen.findByRole('button', { name: /withdraw/i });
     await user.click(withdrawButton);
@@ -80,7 +105,7 @@ describe('Withdraw - Overdraw Auto-Cap', () => {
     const amountInput = await screen.findByRole('spinbutton', { name: /amount/i });
     await user.type(amountInput, '75'); // More than available
 
-    const submitButton = await screen.findByRole('button', { name: /submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: 'Withdraw' });
     await user.click(submitButton);
 
     // After capping, balance should be 0, not negative

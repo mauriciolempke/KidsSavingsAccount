@@ -1,16 +1,29 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockAccountPage = () => <div>Goal Account Mock</div>;
+import { Providers } from '../../src/app/providers';
+import AccountView from '../../src/components/account/AccountView';
 
 describe('Goal Achieved', () => {
   beforeEach(() => {
     mockStore.clear();
     mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
+    mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['bike'],
+        cb: 200,
+        cbts: Date.now()
+      })
+    );
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
-        name: 'Bike Fund',
+        name: 'Bike',
         type: 'Goal',
         allowance: { enabled: false },
         interest: { enabled: false },
@@ -23,7 +36,11 @@ describe('Goal Achieved', () => {
   });
 
   it('should mark goal as Achieved when balance reaches or exceeds cost', async () => {
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="bike" />
+      </Providers>
+    );
 
     // Expect "Mark as Achieved" button or automatic detection
     const achievedButton = await screen.findByRole('button', { name: /mark.*achieved|goal reached/i });
@@ -33,9 +50,18 @@ describe('Goal Achieved', () => {
 
   it('should make Achieved goal account read-only (no deposits/withdraws)', async () => {
     mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['bike'],
+        cb: 200,
+        cbts: Date.now()
+      })
+    );
+    mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
-        name: 'Bike Fund',
+        name: 'Bike',
         type: 'Goal',
         allowance: { enabled: false },
         interest: { enabled: false },
@@ -46,7 +72,11 @@ describe('Goal Achieved', () => {
       })
     );
 
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="bike" />
+      </Providers>
+    );
 
     // Expect Deposit/Withdraw buttons to be disabled or hidden
     await waitFor(() => {
@@ -86,7 +116,7 @@ describe('Goal Achieved', () => {
     mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
-        name: 'Bike Fund',
+        name: 'Bike',
         type: 'Goal',
         allowance: { enabled: false },
         interest: { enabled: false },

@@ -1,9 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { mockStore } from '../../setupTests';
+import { Providers } from '../../src/app/providers';
+import ChildDashboard from '../../src/components/child/ChildDashboard';
 
 describe('Clock Skew Detection', () => {
   it('should show warning message when device clock is earlier than CBTS', async () => {
     const futureTime = Date.now() + 24 * 60 * 60 * 1000; // 1 day in future
+
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
 
     mockStore.set(
       'CHILD-emma.txt',
@@ -15,9 +22,11 @@ describe('Clock Skew Detection', () => {
       })
     );
 
-    // Mock app component that checks for clock skew
-    const mockApp = () => <div>App Mock</div>;
-    render(mockApp());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
     // Expect warning message
     await screen.findByText(/clock.*earlier|time.*incorrect|adjust.*clock/i);
@@ -25,6 +34,11 @@ describe('Clock Skew Detection', () => {
 
   it('should skip balance calculation processing when clock skew detected', async () => {
     const futureTime = Date.now() + 24 * 60 * 60 * 1000;
+
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
 
     mockStore.set(
       'CHILD-emma.txt',

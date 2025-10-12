@@ -1,12 +1,26 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
+import { Providers } from '../../src/app/providers';
+import AccountView from '../../src/components/account/AccountView';
 
-const mockAccountPage = () => <div>Account View Mock</div>;
 
 describe('Deposit and Withdraw', () => {
   beforeEach(() => {
     mockStore.clear();
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
+    mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['savings'],
+        cb: 100,
+        cbts: Date.now()
+      })
+    );
     mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
@@ -23,7 +37,11 @@ describe('Deposit and Withdraw', () => {
 
   it('should append Deposit to ledger, run Balance Calculation, and update UI', async () => {
     const user = userEvent.setup();
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
     // Click Deposit button
     const depositButton = await screen.findByRole('button', { name: /deposit/i });
@@ -36,7 +54,7 @@ describe('Deposit and Withdraw', () => {
     const descInput = await screen.findByRole('textbox', { name: /description/i });
     await user.type(descInput, 'Chores');
 
-    const submitButton = await screen.findByRole('button', { name: /submit|confirm|add/i });
+    const submitButton = await screen.findByRole('button', { name: 'Deposit' });
     await user.click(submitButton);
 
     // Expect ledger to update
@@ -50,7 +68,11 @@ describe('Deposit and Withdraw', () => {
 
   it('should append Withdraw to ledger and update balance', async () => {
     const user = userEvent.setup();
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
     const withdrawButton = await screen.findByRole('button', { name: /withdraw/i });
     await user.click(withdrawButton);
@@ -61,7 +83,7 @@ describe('Deposit and Withdraw', () => {
     const descInput = await screen.findByRole('textbox', { name: /description/i });
     await user.type(descInput, 'Toy purchase');
 
-    const submitButton = await screen.findByRole('button', { name: /submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: 'Withdraw' });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -74,7 +96,11 @@ describe('Deposit and Withdraw', () => {
 
   it('should reject zero or negative amounts', async () => {
     const user = userEvent.setup();
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
     const depositButton = await screen.findByRole('button', { name: /deposit/i });
     await user.click(depositButton);
@@ -83,11 +109,11 @@ describe('Deposit and Withdraw', () => {
     await user.clear(amountInput);
     await user.type(amountInput, '0');
 
-    const submitButton = await screen.findByRole('button', { name: /submit|confirm|add/i });
+    const submitButton = await screen.findByRole('button', { name: 'Deposit' });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/must be greater than zero|positive amount/i)).toBeInTheDocument();
+      expect(screen.getByText(/valid amount greater than zero/i)).toBeInTheDocument();
     });
   });
 });

@@ -1,10 +1,26 @@
 import { render, screen } from '@testing-library/react';
 import { mockStore } from '../../setupTests';
-
-const mockAccountPage = () => <div>Account View Mock</div>;
+import { Providers } from '../../src/app/providers';
+import AccountView from '../../src/components/account/AccountView';
 
 describe('Account View', () => {
   it('should display account name, balance, Savings chart, and ledger table for Savings account', async () => {
+    // Setup: Create parent and child first
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
+    
+    mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['savings'],
+        cb: 60,
+        cbts: Date.now()
+      })
+    );
+
     mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
@@ -19,23 +35,47 @@ describe('Account View', () => {
       })
     );
 
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="savings" />
+      </Providers>
+    );
 
-    // Expect account name
-    expect(await screen.findByText(/Savings/i)).toBeInTheDocument();
+    // Expect account name in header
+    expect(await screen.findByRole('heading', { name: /^Savings$/i, level: 1 })).toBeInTheDocument();
 
     // Expect balance display
-    expect(await screen.findByText(/\$60|Balance.*60/i)).toBeInTheDocument();
+    expect(screen.getByText('$60.00')).toBeInTheDocument();
 
-    // Expect chart (could be canvas or svg)
-    expect(screen.getByRole('img', { name: /chart|graph/i }) || document.querySelector('svg')).toBeInTheDocument();
+    // Expect chart section
+    expect(screen.getByText(/Savings Progression/i)).toBeInTheDocument();
 
-    // Expect ledger table
+    // Expect action buttons
+    expect(screen.getByRole('button', { name: /Deposit/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Withdraw/i })).toBeInTheDocument();
+
+    // Expect ledger entries
     expect(screen.getByText(/Birthday/i)).toBeInTheDocument();
     expect(screen.getByText(/Chores/i)).toBeInTheDocument();
   });
 
   it('should display goal progress bar for Goal account instead of chart', async () => {
+    // Setup: Create parent and child
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
+    
+    mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['bike'],
+        cb: 75,
+        cbts: Date.now()
+      })
+    );
+
     mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
@@ -50,13 +90,21 @@ describe('Account View', () => {
       })
     );
 
-    render(mockAccountPage());
+    render(
+      <Providers>
+        <AccountView childName="emma" accountName="bike" />
+      </Providers>
+    );
 
-    expect(await screen.findByText(/Bike Fund/i)).toBeInTheDocument();
-    expect(await screen.findByText(/New Bike/i)).toBeInTheDocument();
+    // Goal accounts display the goal name as title, not the account name
+    expect(await screen.findByRole('heading', { name: /New Bike Goal/i, level: 1 })).toBeInTheDocument();
     
-    // Expect progress indicator (75/200 = 37.5%)
-    expect(screen.getByRole('progressbar') || screen.getByText(/\$75.*\$200|75.*200/)).toBeInTheDocument();
+    // Expect goal amounts (both appear in the interface)
+    expect(screen.getByText('$200.00')).toBeInTheDocument(); // Goal amount
+    expect(screen.getAllByText('$75.00').length).toBeGreaterThan(0); // Saved amount (appears multiple times: balance + goal detail)
+    
+    // Expect progress indicator showing remaining amount
+    expect(screen.getByText(/\$125.00\s+left to save/i)).toBeInTheDocument();
   });
 });
 

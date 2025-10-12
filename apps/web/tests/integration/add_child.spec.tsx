@@ -22,21 +22,26 @@ describe('Add Child', () => {
     );
 
     // Find and click "Add Child" button
-    const addButton = await screen.findByRole('button', { name: /add child/i });
+    const addButton = await screen.findByRole('button', { name: 'Add Child' });
     await user.click(addButton);
 
     // Enter child name
     const nameInput = await screen.findByRole('textbox', { name: /child name/i });
     await user.type(nameInput, 'Emma');
 
-    // Submit form
-    const submitButton = await screen.findByRole('button', { name: /create|add|save/i });
+    // Submit form - use specific button text "Add" from the modal
+    const submitButton = await screen.findByRole('button', { name: 'Add' });
     await user.click(submitButton);
 
-    // Expect navigation to Child Dashboard
+    // Wait for the modal to close and child to appear in the dashboard
     await waitFor(() => {
-      expect(screen.getByText(/Emma's Accounts/i)).toBeInTheDocument();
+      // The child should now appear in the Family Overview section
+      expect(screen.getByText('Family Overview')).toBeInTheDocument();
+      expect(screen.getByText('Emma')).toBeInTheDocument();
     });
+
+    // Verify the child card shows up with the expected balance
+    expect(screen.getByText('$0.00')).toBeInTheDocument();
   });
 
   it('should accept UTF-8 characters in child name', async () => {
@@ -53,13 +58,17 @@ describe('Add Child', () => {
     const nameInput = await screen.findByRole('textbox', { name: /child name/i });
     await user.type(nameInput, 'Café☕');
 
-    const submitButton = await screen.findByRole('button', { name: /create|add|save/i });
+    const submitButton = await screen.findByRole('button', { name: 'Add' });
     await user.click(submitButton);
 
-    // Expect successful creation with UTF-8 name
+    // Wait for the modal to close and child to appear in the dashboard
     await waitFor(() => {
-      expect(screen.getByText(/Café☕/i)).toBeInTheDocument();
+      expect(screen.getByText('Family Overview')).toBeInTheDocument();
+      expect(screen.getByText('Café☕')).toBeInTheDocument();
     });
+
+    // Verify the child card shows up with the expected balance
+    expect(screen.getByText('$0.00')).toBeInTheDocument();
   });
 
   it('should reject duplicate child name (case-insensitive)', async () => {
@@ -81,7 +90,7 @@ describe('Add Child', () => {
     const nameInput = await screen.findByRole('textbox', { name: /child name/i });
     await user.type(nameInput, 'EMMA');
 
-    const submitButton = await screen.findByRole('button', { name: /create|add|save/i });
+    const submitButton = await screen.findByRole('button', { name: 'Add' });
     await user.click(submitButton);
 
     await waitFor(() => {

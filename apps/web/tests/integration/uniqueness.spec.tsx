@@ -1,6 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
+import { Providers } from '../../src/app/providers';
+import Dashboard from '../../src/components/dashboard/Dashboard';
+import ChildDashboard from '../../src/components/child/ChildDashboard';
 
 describe('Name Uniqueness Validation', () => {
   beforeEach(() => {
@@ -22,16 +25,19 @@ describe('Name Uniqueness Validation', () => {
 
   it('should reject duplicate child names (case-insensitive)', async () => {
     const user = userEvent.setup();
-    const mockDashboard = () => <div>Dashboard Mock</div>;
-    render(mockDashboard());
+    render(
+      <Providers>
+        <Dashboard />
+      </Providers>
+    );
 
-    const addChildButton = await screen.findByRole('button', { name: /add child/i });
+    const addChildButton = await screen.findByRole('button', { name: /add.*child/i });
     await user.click(addChildButton);
 
     const nameInput = await screen.findByRole('textbox', { name: /child name/i });
     await user.type(nameInput, 'EMMA'); // Different case
 
-    const submitButton = await screen.findByRole('button', { name: /create|add/i });
+    const submitButton = await screen.findByRole('button', { name: 'Add' });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -41,10 +47,13 @@ describe('Name Uniqueness Validation', () => {
 
   it('should reject duplicate account names within same child (case-insensitive)', async () => {
     const user = userEvent.setup();
-    const mockChildDashboard = () => <div>Child Dashboard Mock</div>;
-    render(mockChildDashboard());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
-    const addAccountButton = await screen.findByRole('button', { name: /add account/i });
+    const addAccountButton = await screen.findByRole('button', { name: /create.*account/i });
     await user.click(addAccountButton);
 
     const nameInput = await screen.findByRole('textbox', { name: /account name/i });
@@ -53,7 +62,7 @@ describe('Name Uniqueness Validation', () => {
     const typeSelect = await screen.findByRole('combobox', { name: /account type/i });
     await user.selectOptions(typeSelect, 'Savings');
 
-    const submitButton = await screen.findByRole('button', { name: /create|save/i });
+    const submitButton = await screen.findByRole('button', { name: 'Create Account' });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -78,10 +87,13 @@ describe('Name Uniqueness Validation', () => {
 
     // Noah can have a 'Savings' account even though Emma has one
     const user = userEvent.setup();
-    const mockChildDashboard = () => <div>Noah Dashboard Mock</div>;
-    render(mockChildDashboard());
+    render(
+      <Providers>
+        <ChildDashboard childName="noah" />
+      </Providers>
+    );
 
-    const addAccountButton = await screen.findByRole('button', { name: /add account/i });
+    const addAccountButton = await screen.findByRole('button', { name: /create.*account/i });
     await user.click(addAccountButton);
 
     const nameInput = await screen.findByRole('textbox', { name: /account name/i });
@@ -90,7 +102,7 @@ describe('Name Uniqueness Validation', () => {
     const typeSelect = await screen.findByRole('combobox', { name: /account type/i });
     await user.selectOptions(typeSelect, 'Savings');
 
-    const submitButton = await screen.findByRole('button', { name: /create|save/i });
+    const submitButton = await screen.findByRole('button', { name: 'Create Account' });
     await user.click(submitButton);
 
     // Should succeed

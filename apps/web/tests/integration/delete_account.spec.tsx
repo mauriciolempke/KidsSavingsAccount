@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockChildDashboard = () => <div>Child Dashboard Mock</div>;
+import { Providers } from '../../src/app/providers';
+import ChildDashboard from '../../src/components/child/ChildDashboard';
 
 describe('Delete Account', () => {
   beforeEach(() => {
@@ -33,7 +33,7 @@ describe('Delete Account', () => {
     mockStore.set(
       'ACCOUNT-emma-bike.txt',
       JSON.stringify({
-        name: 'Bike Fund',
+        name: 'Bike',
         type: 'Goal',
         allowance: { enabled: false },
         interest: { enabled: false },
@@ -45,7 +45,11 @@ describe('Delete Account', () => {
 
   it('should show confirmation dialog before deleting account', async () => {
     const user = userEvent.setup();
-    render(mockChildDashboard());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete.*savings|remove.*account/i });
     await user.click(deleteButton);
@@ -55,7 +59,11 @@ describe('Delete Account', () => {
 
   it('should delete account file and update child references', async () => {
     const user = userEvent.setup();
-    render(mockChildDashboard());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete.*savings|remove.*account/i });
     await user.click(deleteButton);
@@ -76,7 +84,11 @@ describe('Delete Account', () => {
 
   it('should recalculate child balance after account deletion', async () => {
     const user = userEvent.setup();
-    render(mockChildDashboard());
+    render(
+      <Providers>
+        <ChildDashboard childName="emma" />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete.*savings|remove.*account/i });
     await user.click(deleteButton);

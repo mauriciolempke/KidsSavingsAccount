@@ -77,6 +77,20 @@ export default function AccountView({ childName, accountName }: AccountViewProps
     triggerRefresh();
   }
 
+  async function handleMarkGoalAchieved() {
+    if (!account?.goal) return;
+    
+    try {
+      await AccountService.markGoalAchieved(childName, accountName);
+      toastStore.success('Goal marked as achieved! 🎉');
+      await runBalanceCalculation();
+      triggerRefresh();
+    } catch (error) {
+      console.error('Failed to mark goal as achieved:', error);
+      toastStore.error('Failed to mark goal as achieved');
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -141,13 +155,24 @@ export default function AccountView({ childName, accountName }: AccountViewProps
             />
           </div>
           <div className="goal-left-message">
-            Only {formatCurrency(account.goal.cost - account.balance)} left to save!
+            {account.balance >= account.goal.cost 
+              ? '🎉 You reached your goal!'
+              : `Only ${formatCurrency(account.goal.cost - account.balance)} left to save!`
+            }
           </div>
-          {account.goal.achieved && (
+          {account.goal.achieved ? (
             <div className="goal-achieved-banner">
               <span className="achievement-icon">🎉</span>
               <span>Goal Achieved!</span>
             </div>
+          ) : account.balance >= account.goal.cost && (
+            <button 
+              className="btn btn-success"
+              onClick={handleMarkGoalAchieved}
+              style={{ marginTop: '12px', width: '100%' }}
+            >
+              Mark as Achieved
+            </button>
           )}
         </div>
       )}

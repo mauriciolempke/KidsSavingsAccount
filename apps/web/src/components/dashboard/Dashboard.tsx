@@ -19,6 +19,7 @@ export default function Dashboard({ parentName }: DashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddChild, setShowAddChild] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{childName: string} | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -41,6 +42,20 @@ export default function Dashboard({ parentName }: DashboardProps) {
     setShowAddChild(false);
     await runBalanceCalculation();
     triggerRefresh();
+  }
+
+  async function handleDeleteChild() {
+    if (!deleteConfirm) return;
+    
+    try {
+      await ChildService.deleteChild(deleteConfirm.childName);
+      setDeleteConfirm(null);
+      await runBalanceCalculation();
+      triggerRefresh();
+    } catch (err) {
+      console.error('Error deleting child:', err);
+      setError('Failed to delete child');
+    }
   }
 
   function formatCurrency(amount: number): string {
@@ -91,11 +106,11 @@ export default function Dashboard({ parentName }: DashboardProps) {
 
           <div className="children-grid">
             {children.map((child) => (
-              <Link 
-                key={child.name} 
-                href={`/child/${encodeURIComponent(child.name)}`}
-              >
-                <div className="child-card-modern">
+              <div key={child.name} className="child-card-modern" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Link 
+                  href={`/child/${encodeURIComponent(child.name)}`}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px' }}
+                >
                   <div className="child-card-left">
                     <div className="child-card-name-age">
                       {child.name}
@@ -112,8 +127,30 @@ export default function Dashboard({ parentName }: DashboardProps) {
                       Total Balance
                     </div>
                   </div>
+                </Link>
+                <div style={{ padding: '12px', borderTop: '1px solid #e0e0e0', backgroundColor: '#f8f9fa' }}>
+                  <button
+                    className="btn btn-danger"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDeleteConfirm({ childName: child.name });
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    aria-label={`Delete ${child.name}`}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
+                  >
+                    Delete Child
+                  </button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
 
@@ -144,6 +181,53 @@ export default function Dashboard({ parentName }: DashboardProps) {
               onSuccess={handleAddChildSuccess}
               onCancel={() => setShowAddChild(false)}
             />
+          </div>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Are you sure you want to delete <b>{deleteConfirm.childName}</b>?</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setDeleteConfirm(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+             
+              <p className="warning-text">
+                This will permanently delete:
+              </p>
+              <ul style={{ marginLeft: '40px' }}>
+                <li>Child profile</li>
+                <li>All accounts</li>
+                <li>All transactions</li>
+              </ul>
+              <p style={{ color: '#dc3545', fontWeight: 'bold', marginTop: '10px' }}>
+                <strong>This action cannot be undone!</strong>
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setDeleteConfirm(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-danger"
+                onClick={handleDeleteChild}
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

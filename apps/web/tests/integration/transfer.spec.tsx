@@ -1,12 +1,25 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockTransferPage = () => <div>Transfer Mock</div>;
+import { Providers } from '../../src/app/providers';
+import TransferForm from '../../src/components/forms/TransferForm';
 
 describe('Transfer Between Accounts', () => {
   beforeEach(() => {
     mockStore.clear();
+    mockStore.set(
+      'PARENT.txt',
+      JSON.stringify({ name: 'Test Parent', children: ['emma'] })
+    );
+    mockStore.set(
+      'CHILD-emma.txt',
+      JSON.stringify({
+        name: 'Emma',
+        accounts: ['savings', 'bikefund'],
+        cb: 100,
+        cbts: Date.now()
+      })
+    );
     mockStore.set(
       'ACCOUNT-emma-savings.txt',
       JSON.stringify({
@@ -21,9 +34,9 @@ describe('Transfer Between Accounts', () => {
     );
 
     mockStore.set(
-      'ACCOUNT-emma-bike.txt',
+      'ACCOUNT-emma-bikefund.txt',
       JSON.stringify({
-        name: 'Bike Fund',
+        name: 'BikeFund',
         type: 'Goal',
         allowance: { enabled: false },
         interest: { enabled: false },
@@ -35,7 +48,15 @@ describe('Transfer Between Accounts', () => {
 
   it('should post withdraw from source and deposit to target', async () => {
     const user = userEvent.setup();
-    render(mockTransferPage());
+    render(
+      <Providers>
+        <TransferForm 
+          childName="emma" 
+          onSuccess={() => {}} 
+          onCancel={() => {}} 
+        />
+      </Providers>
+    );
 
     // Select from account
     const fromSelect = await screen.findByRole('combobox', { name: /from account/i });
@@ -43,14 +64,14 @@ describe('Transfer Between Accounts', () => {
 
     // Select to account
     const toSelect = await screen.findByRole('combobox', { name: /to account/i });
-    await user.selectOptions(toSelect, 'Bike Fund');
+    await user.selectOptions(toSelect, 'BikeFund');
 
     // Enter amount
     const amountInput = await screen.findByRole('spinbutton', { name: /amount/i });
     await user.type(amountInput, '50');
 
     // Submit
-    const submitButton = await screen.findByRole('button', { name: /transfer|submit/i });
+    const submitButton = await screen.findByRole('button', { name: 'Transfer' });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -60,7 +81,15 @@ describe('Transfer Between Accounts', () => {
 
   it('should cap transfer amount to available balance with toast', async () => {
     const user = userEvent.setup();
-    render(mockTransferPage());
+    render(
+      <Providers>
+        <TransferForm 
+          childName="emma" 
+          onSuccess={() => {}} 
+          onCancel={() => {}} 
+        />
+      </Providers>
+    );
 
     const fromSelect = await screen.findByRole('combobox', { name: /from account/i });
     await user.selectOptions(fromSelect, 'Savings');
@@ -83,22 +112,30 @@ describe('Transfer Between Accounts', () => {
 
   it('should reject zero or negative transfer amounts', async () => {
     const user = userEvent.setup();
-    render(mockTransferPage());
+    render(
+      <Providers>
+        <TransferForm 
+          childName="emma" 
+          onSuccess={() => {}} 
+          onCancel={() => {}} 
+        />
+      </Providers>
+    );
 
     const fromSelect = await screen.findByRole('combobox', { name: /from account/i });
     await user.selectOptions(fromSelect, 'Savings');
 
     const toSelect = await screen.findByRole('combobox', { name: /to account/i });
-    await user.selectOptions(toSelect, 'Bike Fund');
+    await user.selectOptions(toSelect, 'BikeFund');
 
     const amountInput = await screen.findByRole('spinbutton', { name: /amount/i });
     await user.type(amountInput, '0');
 
-    const submitButton = await screen.findByRole('button', { name: /transfer|submit/i });
+    const submitButton = await screen.findByRole('button', { name: 'Transfer' });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/must be greater than zero|positive amount/i)).toBeInTheDocument();
+      expect(screen.getByText(/valid amount greater than zero/i)).toBeInTheDocument();
     });
   });
 });

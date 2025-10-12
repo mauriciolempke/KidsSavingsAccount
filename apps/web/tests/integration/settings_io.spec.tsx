@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockStore } from '../../setupTests';
-
-const mockSettingsPage = () => <div>Settings Mock</div>;
+import { Providers } from '../../src/app/providers';
+import SettingsView from '../../src/components/settings/SettingsView';
 
 describe('Settings - Import/Export/Delete Everything', () => {
   beforeEach(() => {
@@ -24,7 +24,11 @@ describe('Settings - Import/Export/Delete Everything', () => {
 
   it('should export all data as JSON manifest', async () => {
     const user = userEvent.setup();
-    render(mockSettingsPage());
+    render(
+      <Providers>
+        <SettingsView />
+      </Providers>
+    );
 
     const exportButton = await screen.findByRole('button', { name: /export/i });
     await user.click(exportButton);
@@ -38,14 +42,20 @@ describe('Settings - Import/Export/Delete Everything', () => {
 
   it('should import data atomically (all-or-nothing swap)', async () => {
     const user = userEvent.setup();
-    render(mockSettingsPage());
+    render(
+      <Providers>
+        <SettingsView />
+      </Providers>
+    );
 
-    const importButton = await screen.findByRole('button', { name: /import/i });
-    await user.click(importButton);
-
-    // Mock file input
-    const fileInput = await screen.findByLabelText(/choose file|select file/i);
-    const mockFile = new File(['{"PARENT.txt": "{}"}'], 'backup.json', { type: 'application/json' });
+    // Find the file input (it's hidden under the "Choose File" label)
+    const fileInput = await screen.findByLabelText(/choose file/i);
+    
+    // Create a valid manifest with proper structure
+    const mockManifest = JSON.stringify({
+      'PARENT.txt': JSON.stringify({ name: 'Test Parent', children: [] })
+    });
+    const mockFile = new File([mockManifest], 'backup.json', { type: 'application/json' });
     
     await user.upload(fileInput, mockFile);
 
@@ -57,13 +67,17 @@ describe('Settings - Import/Export/Delete Everything', () => {
 
   it('should delete everything with confirmation', async () => {
     const user = userEvent.setup();
-    render(mockSettingsPage());
+    render(
+      <Providers>
+        <SettingsView />
+      </Providers>
+    );
 
     const deleteButton = await screen.findByRole('button', { name: /delete everything|reset/i });
     await user.click(deleteButton);
 
     // Expect confirmation dialog
-    const confirmButton = await screen.findByRole('button', { name: /confirm|yes|delete/i });
+    const confirmButton = await screen.findByRole('button', { name: /yes.*delete/i });
     expect(confirmButton).toBeInTheDocument();
 
     await user.click(confirmButton);
